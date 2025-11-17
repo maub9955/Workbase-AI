@@ -1,7 +1,10 @@
 {
   "extends": "@notion-clone/tsconfig/tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "outDir": "dist",
+    "noEmit": false,
+    "skipLibCheck": true,
+    "moduleResolution": "node"
   },
-  "include": ["src"]
+  "include": ["src", "ws.d.ts"]
 }
