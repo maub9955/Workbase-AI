@@ -1,4 +1,3 @@
-// @ts-ignore - ws module type declarations (for Vercel build compatibility)
 import { WebSocketServer, WebSocket } from "ws";
 
 const port = Number(process.env.REALTIME_PORT ?? 4100);
