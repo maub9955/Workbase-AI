@@ -6,8 +6,7 @@
     "skipLibCheck": true,
     "moduleResolution": "node",
     "strict": false,
-    "noImplicitAny": false,
-    "typeRoots": ["./node_modules/@types", "./src"]
+    "noImplicitAny": false
   },
-  "include": ["src/**/*", "src/types.d.ts"]
+  "include": ["src/**/*", "types.d.ts"]
 }
