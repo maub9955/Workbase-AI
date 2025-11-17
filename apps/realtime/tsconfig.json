@@ -7,5 +7,5 @@
     "moduleResolution": "node",
     "noImplicitAny": false
   },
-  "include": ["src", "ws.d.ts"]
+  "include": ["src/**/*"]
 }
