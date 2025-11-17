@@ -1,0 +1,15 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 5, "column": 0}, "map": {"version":3,"sources":["/turbopack/[project]/apps/web/src/app/layout.tsx"],"sourcesContent":["import type { Metadata } from \"next\";\nimport \"./globals.css\";\n\nexport const metadata: Metadata = {\n  title: \"Workbase-AI\",\n  description: \"팀을 위한 올인원 문서 · 캘린더 · 파일 허브\"\n};\n\nexport default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {\n  return (\n    <html lang=\"ko\">\n      <body className=\"antialiased text-slate-900 bg-slate-50\">{children}</body>\n    </html>\n  );\n}\n"],"names":[],"mappings":";;;;;;;;AAGO,MAAM,WAAqB;IAChC,OAAO;IACP,aAAa;AACf;AAEe,SAAS,WAAW,EAAE,QAAQ,EAA2C;IACtF,qBACE,wPAAC;QAAK,MAAK;kBACT,cAAA,wPAAC;YAAK,WAAU;sBAA0C;;;;;;;;;;;AAGhE"}},
+    {"offset": {"line": 34, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"A"}},
+    {"offset": {"line": 46, "column": 0}, "map": {"version":3,"sources":["/turbopack/[project]/apps/web/src/components/my-space.tsx/proxy.js"],"sourcesContent":["import { registerClientReference } from \"react-server-dom-turbopack/server.edge\";\nexport const MySpace = registerClientReference(\n    function() { throw new Error(\"Attempted to call MySpace() from the server but MySpace is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.\"); },\n    \"[project]/apps/web/src/components/my-space.tsx\",\n    \"MySpace\",\n);\n"],"names":[],"mappings":";;;;;;AACO,MAAM,UAAU,CAAA,GAAA,+PAAA,CAAA,0BAAuB,AAAD,EACzC;IAAa,MAAM,IAAI,MAAM;AAA8N,GAC3P,kDACA"}},
+    {"offset": {"line": 55, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"A"}},
+    {"offset": {"line": 60, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":""}},
+    {"offset": {"line": 65, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"A"}},
+    {"offset": {"line": 70, "column": 0}, "map": {"version":3,"sources":["/turbopack/[project]/apps/web/src/app/my-space/page.tsx"],"sourcesContent":["import { MySpace } from \"../../components/my-space\";\n\nexport const metadata = {\n  title: \"나만의 개인 페이지\",\n  description: \"회원가입만 하면 즉시 개인 워크스페이스가 생성됩니다.\"\n};\n\nexport default function MySpacePage() {\n  return (\n    <main className=\"page\">\n      <MySpace />\n    </main>\n  );\n}\n"],"names":[],"mappings":";;;;;;;;;AAEO,MAAM,WAAW;IACtB,OAAO;IACP,aAAa;AACf;AAEe,SAAS;IACtB,qBACE,wPAAC;QAAK,WAAU;kBACd,cAAA,wPAAC,gJAAA,CAAA,UAAO;;;;;;;;;;AAGd"}},
+    {"offset": {"line": 97, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"A"}},
+    {"offset": {"line": 109, "column": 0}, "map": {"version":3,"sources":["/turbopack/[project]/apps/web/.next-internal/server/app/my-space/page/actions.js"],"sourcesContent":["__turbopack_export_value__({\n});"],"names":[],"mappings":"AAAA,2BAA2B,CAC3B"}},
+    {"offset": {"line": 110, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"A"}}]
+}
