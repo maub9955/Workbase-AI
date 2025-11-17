@@ -30,10 +30,10 @@ function saveJson<T>(file: string, data: T) {
 }
 
 export class FileDatabase {
-  private users: Map<string, User>;
-  private pages: Map<string, Page>;
-  private blocks: Map<string, Block>;
-  private files: Map<string, FileAsset>;
+  private _users: Map<string, User>;
+  private _pages: Map<string, Page>;
+  private _blocks: Map<string, Block>;
+  private _files: Map<string, FileAsset>;
 
   constructor() {
     const usersData = loadJson<Record<string, User>>(USERS_FILE, {});
@@ -41,37 +41,37 @@ export class FileDatabase {
     const blocksData = loadJson<Record<string, Block>>(BLOCKS_FILE, {});
     const filesData = loadJson<Record<string, FileAsset>>(FILES_FILE, {});
 
-    this.users = new Map(Object.entries(usersData));
-    this.pages = new Map(Object.entries(pagesData));
-    this.blocks = new Map(Object.entries(blocksData));
-    this.files = new Map(Object.entries(filesData));
+    this._users = new Map(Object.entries(usersData));
+    this._pages = new Map(Object.entries(pagesData));
+    this._blocks = new Map(Object.entries(blocksData));
+    this._files = new Map(Object.entries(filesData));
   }
 
   private save() {
-    saveJson(USERS_FILE, Object.fromEntries(this.users));
-    saveJson(PAGES_FILE, Object.fromEntries(this.pages));
-    saveJson(BLOCKS_FILE, Object.fromEntries(this.blocks));
-    saveJson(FILES_FILE, Object.fromEntries(this.files));
+    saveJson(USERS_FILE, Object.fromEntries(this._users));
+    saveJson(PAGES_FILE, Object.fromEntries(this._pages));
+    saveJson(BLOCKS_FILE, Object.fromEntries(this._blocks));
+    saveJson(FILES_FILE, Object.fromEntries(this._files));
   }
 
   get users() {
-    return this.users;
+    return this._users;
   }
 
   get pages() {
-    return this.pages;
+    return this._pages;
   }
 
   get blocks() {
-    return this.blocks;
+    return this._blocks;
   }
 
   get files() {
-    return this.files;
+    return this._files;
   }
 
   findUserByEmail(email: string) {
-    return [...this.users.values()].find((user) => user.email === email);
+    return [...this._users.values()].find((user) => user.email === email);
   }
 
   createUser({ email, password, name }: { email: string; password: string; name: string }) {
@@ -97,8 +97,8 @@ export class FileDatabase {
       updatedAt: now
     };
 
-    this.users.set(id, user);
-    this.pages.set(personalPageId, page);
+    this._users.set(id, user);
+    this._pages.set(personalPageId, page);
 
     const welcomeBlock = this.createBlock({
       pageId: personalPageId,
@@ -140,35 +140,35 @@ export class FileDatabase {
       createdAt: now,
       updatedAt: now
     };
-    this.pages.set(id, page);
+    this._pages.set(id, page);
     this.save();
     return page;
   }
 
-  getPageTree(rootPageId: string, userId: string) {
-    const rootPage = this.pages.get(rootPageId);
+  getPageTree(rootPageId: string, userId: string): { id: string; title: string; icon?: string; children: Array<{ id: string; title: string; icon?: string; children: any[] }> } {
+    const rootPage = this._pages.get(rootPageId);
     if (!rootPage || !rootPage.collaborators.includes(userId)) {
       throw new Error("PAGE_NOT_FOUND_OR_NO_ACCESS");
     }
 
-    const buildTree = (pageId: string) => {
-      const page = this.pages.get(pageId);
+    const buildTree = (pageId: string): { id: string; title: string; icon?: string; children: Array<{ id: string; title: string; icon?: string; children: any[] }> } => {
+      const page = this._pages.get(pageId);
       if (!page) {
         throw new Error("PAGE_NOT_FOUND");
       }
 
-      const children = page.childPageIds
+      const children: Array<{ id: string; title: string; icon?: string; children: any[] }> = page.childPageIds
         .map((childId) => {
-          const child = this.pages.get(childId);
+          const child = this._pages.get(childId);
           if (!child || !child.collaborators.includes(userId)) {
             return null;
           }
           return buildTree(childId);
         })
-        .filter((node) => node !== null)
+        .filter((node): node is { id: string; title: string; icon?: string; children: any[] } => node !== null)
         .sort((a, b) => {
-          const aPage = this.pages.get(a.id);
-          const bPage = this.pages.get(b.id);
+          const aPage = this._pages.get(a.id);
+          const bPage = this._pages.get(b.id);
           return (bPage?.position ?? 0) - (aPage?.position ?? 0);
         });
 
@@ -198,7 +198,7 @@ export class FileDatabase {
     position: number;
     parentBlockId?: string;
   }): Block {
-    const page = this.pages.get(pageId);
+    const page = this._pages.get(pageId);
     if (!page) {
       throw new Error("PAGE_NOT_FOUND");
     }
@@ -214,11 +214,11 @@ export class FileDatabase {
       createdBy: authorId
     };
 
-    this.blocks.set(block.id, block);
+    this._blocks.set(block.id, block);
     page.blockIds.push(block.id);
     page.blockIds.sort((aId, bId) => {
-      const a = this.blocks.get(aId);
-      const b = this.blocks.get(bId);
+      const a = this._blocks.get(aId);
+      const b = this._blocks.get(bId);
       return (b?.position ?? 0) - (a?.position ?? 0);
     });
     page.updatedAt = new Date().toISOString();
@@ -227,18 +227,18 @@ export class FileDatabase {
   }
 
   getBlocksForPage(pageId: string) {
-    const page = this.pages.get(pageId);
+    const page = this._pages.get(pageId);
     if (!page) {
       return [];
     }
     return page.blockIds
-      .map((blockId) => this.blocks.get(blockId))
+      .map((blockId) => this._blocks.get(blockId))
       .filter((block): block is Block => Boolean(block))
       .sort((a, b) => b.position - a.position);
   }
 
   serializePageWithEntries(pageId: string) {
-    const page = this.pages.get(pageId);
+    const page = this._pages.get(pageId);
     if (!page) {
       throw new Error("PAGE_NOT_FOUND");
     }

@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, Inject, NotFoundException } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
-import { db, type Page } from "../../storage/database.js";
+import { db, type Page, type PageTreeNode } from "../../storage/database.js";
 import { AddEntryDto } from "./dto/add-entry.dto.js";
 import { AddCollaboratorDto } from "./dto/add-collaborator.dto.js";
 import { CreatePageDto } from "./dto/create-page.dto.js";
