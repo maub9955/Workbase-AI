@@ -1,0 +1,22 @@
+# Supabase Connection String
+
+## 옵션 1: 비밀번호가 cx%2243bw 인 경우
+postgresql://postgres:cx%2243bw@db.evboyoserxjptvwltyeo.supabase.co:5432/postgres
+
+## 옵션 2: 비밀번호가 cx%2243bw!@ 인 경우
+postgresql://postgres:cx%2243bw!@@db.evboyoserxjptvwltyeo.supabase.co:5432/postgres
+
+## URL 인코딩이 필요한 경우 (특수문자 문제 시)
+# 옵션 1 (URL 인코딩)
+postgresql://postgres:cx%2522243bw@db.evboyoserxjptvwltyeo.supabase.co:5432/postgres
+
+# 옵션 2 (URL 인코딩)
+postgresql://postgres:cx%2522243bw%21%40@db.evboyoserxjptvwltyeo.supabase.co:5432/postgres
+
+## 사용 방법
+1. 위 중 하나를 복사
+2. Render Dashboard → API 서비스 → Environment Variables
+3. Key: DATABASE_URL
+4. Value: 위에서 복사한 Connection string
+5. Save → 재배포
+

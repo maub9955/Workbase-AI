@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { Pool, type QueryResult } from "pg";
+import { Pool, type QueryResult, type QueryResultRow } from "pg";
 import type { User, Page, Block, FileAsset, Team, PageEntry, PageSnapshot, PageTreeNode } from "./database.js";
 
 // PostgreSQL 연결 풀 생성
@@ -22,7 +22,7 @@ function getPool(): Pool {
 
 // PostgreSQL 데이터베이스 클래스
 export class PostgresDatabase {
-  private async query<T = unknown>(text: string, params?: unknown[]): Promise<QueryResult<T>> {
+  private async query<T extends QueryResultRow = QueryResultRow>(text: string, params?: unknown[]): Promise<QueryResult<T>> {
     const client = getPool();
     try {
       return await client.query<T>(text, params);
