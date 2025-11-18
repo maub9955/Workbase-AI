@@ -123,14 +123,25 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 ## 3단계: Render 환경 변수 설정
 
-1. Render Dashboard → API 서비스 (api.workbase-ai.com) 선택
-2. **Environment** 탭 클릭
-3. 다음 환경 변수 추가:
-   ```
-   DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:5432/postgres
-   ```
-   (위에서 복사한 URI 사용)
-4. **Save Changes** 클릭
+### Render Dashboard에서 환경 변수 추가
+
+1. **Render Dashboard 접속**: https://dashboard.render.com
+2. **Services** 메뉴 클릭 (왼쪽 사이드바)
+3. **API 서비스 선택** (api.workbase-ai.com 또는 비슷한 이름)
+4. 다음 중 하나의 방법으로 환경 변수 섹션 찾기:
+   - **방법 A**: 상단 탭 메뉴에서 **Environment** 또는 **Settings** 탭 클릭
+   - **방법 B**: 왼쪽 사이드바에서 **Settings** 클릭 → 페이지 스크롤 → **Environment Variables** 섹션
+   - **방법 C**: 서비스 페이지에서 **Environment Variables** 섹션 직접 찾기
+
+5. **Add Environment Variable** 또는 **+ Add** 버튼 클릭
+6. 다음 정보 입력:
+   - **Key**: `DATABASE_URL`
+   - **Value**: `postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:5432/postgres`
+     (위에서 만든 Connection string 사용)
+7. **Save** 또는 **Add** 클릭
+8. **Save Changes** 클릭 (페이지 하단에 있을 수 있음)
+
+**참고**: 환경 변수 섹션을 찾을 수 없다면 `RENDER-ENV-VARIABLES.md` 파일을 참고하세요.
 
 ## 4단계: 코드 마이그레이션
 
