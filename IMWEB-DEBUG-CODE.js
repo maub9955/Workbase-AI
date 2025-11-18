@@ -127,17 +127,19 @@ async function getImwebUser() {
     console.error('방법 3 오류:', error);
   }
 
-  // 방법 4: Imweb API 호출 (다양한 엔드포인트 시도)
-  console.log('방법 4 시도: Imweb API 호출');
+  // 방법 4: Imweb API 호출 (절대 URL만 사용, 상대 경로 제거)
+  console.log('방법 4 시도: Imweb API 호출 (절대 URL만)');
+  const currentDomain = window.location.origin;
   const apiEndpoints = [
+    `${currentDomain}/api/user/me`,
+    `${currentDomain}/api/v2/user`,
     'https://api.imweb.io/v2/user/me',
     'https://api.imweb.io/v1/user',
-    '/api/user/me',
-    '/api/v2/user',
   ];
   
   for (const endpoint of apiEndpoints) {
     try {
+      console.log(`시도 중: ${endpoint}`);
       const response = await fetch(endpoint, {
         credentials: 'include',
         headers: {
@@ -153,9 +155,11 @@ async function getImwebUser() {
           name: user.name || user.user_name || user.nickname,
           id: user.id || user.user_id,
         };
+      } else {
+        console.log(`방법 4 실패 (${endpoint}): ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      console.log(`방법 4 실패 (${endpoint}):`, error.message);
+      console.log(`방법 4 오류 (${endpoint}):`, error.message);
     }
   }
 
@@ -167,9 +171,11 @@ async function getImwebUser() {
 async function redirectToWorkbaseAI() {
   console.log('=== Workbase-AI로 리다이렉트 시작 ===');
   
-  const imwebUser = await getImwebUser();
+  let imwebUser = await getImwebUser();
   
   if (!imwebUser || !imwebUser.email) {
+    console.log('자동으로 사용자 정보를 가져올 수 없습니다. 수동 입력을 요청합니다.');
+    
     // 사용자 정보를 가져올 수 없는 경우, 수동 입력 받기
     const email = prompt('이메일을 입력해주세요:');
     if (!email || !email.includes('@')) {
@@ -177,13 +183,15 @@ async function redirectToWorkbaseAI() {
       return;
     }
     
-    const name = prompt('이름을 입력해주세요 (선택사항):') || email.split('@')[0];
+    const name = prompt('이름을 입력해주세요 (선택사항, 엔터로 건너뛰기):') || email.split('@')[0];
     
     imwebUser = {
       email: email,
       name: name,
       id: null,
     };
+    
+    console.log('수동 입력된 사용자 정보:', imwebUser);
   }
 
   console.log('사용자 정보:', imwebUser);
