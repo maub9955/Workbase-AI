@@ -54,6 +54,52 @@ export class AuthService {
     return user;
   }
 
+  async imwebLogin(imwebToken: string) {
+    try {
+      // Imweb API로 토큰 검증 및 사용자 정보 가져오기
+      // 주의: 실제 Imweb API 엔드포인트는 Imweb 개발자 문서를 확인하세요
+      const imwebApiUrl = process.env.IMWEB_API_URL || 'https://api.imweb.io/v2';
+      const response = await fetch(`${imwebApiUrl}/auth/verify`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${imwebToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new UnauthorizedException('유효하지 않은 Imweb 토큰입니다.');
+      }
+
+      const imwebUser = await response.json();
+
+      // 데이터베이스에서 사용자 찾기 또는 생성
+      let user = db.findUserByEmail(imwebUser.email);
+
+      if (!user) {
+        // 새 사용자 생성 (Imweb 로그인이므로 비밀번호는 랜덤 생성)
+        const { user: newUser } = db.createUser({
+          email: imwebUser.email,
+          name: imwebUser.name || imwebUser.email.split('@')[0],
+          password: randomUUID(), // Imweb 로그인이므로 비밀번호 불필요
+        });
+        user = newUser;
+      }
+
+      // 세션 토큰 생성
+      const token = randomUUID();
+      this.sessions.set(token, user.id);
+
+      return {
+        token,
+        user: this.serializeUser(user),
+      };
+    } catch (error) {
+      console.error('Imweb 로그인 오류:', error);
+      throw new UnauthorizedException('Imweb 로그인에 실패했습니다.');
+    }
+  }
+
   private serializeUser(user: { id: string; email: string; name: string; personalPageId: string; password?: string }) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safe } = user;
