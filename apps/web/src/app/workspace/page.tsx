@@ -55,6 +55,9 @@ export default function WorkspacePage() {
 
   const loadPersonalPage = async (tokenValue: string) => {
     try {
+      // 페이지 로드 전 블록 초기화 (이전 페이지의 내용이 남아있는 문제 방지)
+      setBlocks([]);
+      
       const res = await fetch(`${API_URL}/pages/me`, {
         headers: { "x-user-token": tokenValue }
       });

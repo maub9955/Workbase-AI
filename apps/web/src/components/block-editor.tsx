@@ -146,9 +146,18 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
       
       // 먼저 에디터를 완전히 비움 (이전 페이지의 내용이 남아있는 문제 방지)
       isUpdatingRef.current = true;
+      editor.commands.clearContent();
       editor.commands.setContent("<p></p>");
       
-      // 현재 페이지의 paragraph 블록 찾기
+      // blocks가 비어있으면 아직 로드 중이므로 대기
+      if (blocks.length === 0) {
+        setTimeout(() => {
+          isUpdatingRef.current = false;
+        }, 100);
+        return;
+      }
+      
+      // 현재 페이지의 paragraph 블록 찾기 (blocks는 이미 현재 페이지의 블록만 포함)
       const paragraphBlock = blocks.find((b) => b.type === "paragraph");
       
       if (paragraphBlock) {
@@ -180,16 +189,21 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
       return;
     }
 
+    // blocks가 비어있으면 아직 로드 중이므로 동기화하지 않음
+    if (blocks.length === 0) {
+      return;
+    }
+
     // 블록이 업데이트되었지만 사용자가 입력 중이 아닐 때만 동기화
     // 현재 페이지의 paragraph 블록만 사용 (페이지별 독립성 보장)
-    const paragraphBlock = blocks.find((b) => 
-      b.type === "paragraph" && 
-      (currentParagraphBlockIdRef.current === null || b.id === currentParagraphBlockIdRef.current)
-    ) || blocks.find((b) => b.type === "paragraph");
+    // currentParagraphBlockIdRef가 설정되어 있으면 그것만 사용, 없으면 첫 번째 paragraph 블록 사용
+    const paragraphBlock = currentParagraphBlockIdRef.current
+      ? blocks.find((b) => b.type === "paragraph" && b.id === currentParagraphBlockIdRef.current)
+      : blocks.find((b) => b.type === "paragraph");
     
     if (!paragraphBlock) {
-      // paragraph 블록이 없으면 생성
-      if (onBlockCreate) {
+      // paragraph 블록이 없으면 생성 (하지만 사용자가 입력 중이 아닐 때만)
+      if (onBlockCreate && !editor.isFocused) {
         onBlockCreate("paragraph", { text: "", html: "" });
       }
       return;
@@ -206,13 +220,18 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
     const currentContent = editor.getHTML();
 
     // 저장된 내용과 현재 내용이 다르고, 마지막 저장된 내용과도 다를 때만 동기화
+    // 단, 현재 에디터 내용이 비어있지 않으면 덮어쓰지 않음 (사용자가 입력 중일 수 있음)
     if (currentContent !== expectedContent && expectedContent !== lastSavedContentRef.current) {
-      isUpdatingRef.current = true;
-      lastSavedContentRef.current = expectedContent;
-      editor.commands.setContent(expectedContent);
-      setTimeout(() => {
-        isUpdatingRef.current = false;
-      }, 100);
+      // 에디터가 비어있거나, 예상된 내용과 일치하지 않을 때만 동기화
+      const isEmpty = currentContent.trim() === "" || currentContent.trim() === "<p></p>";
+      if (isEmpty || !editor.isFocused) {
+        isUpdatingRef.current = true;
+        lastSavedContentRef.current = expectedContent;
+        editor.commands.setContent(expectedContent);
+        setTimeout(() => {
+          isUpdatingRef.current = false;
+        }, 100);
+      }
     }
   }, [editor, blocks, pageId, mounted]);
 
