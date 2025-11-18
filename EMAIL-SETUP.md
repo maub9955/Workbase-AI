@@ -12,9 +12,9 @@
 ```
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-SMTP_FROM=your-email@gmail.com
+SMTP_USER=maub9955@gmail.com
+SMTP_PASS="mgkx xyvg orce qfdi"
+SMTP_FROM=maub9955@gmail.com
 FRONTEND_URL=https://www.workbase-ai.com
 ```
 

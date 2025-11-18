@@ -225,14 +225,24 @@ export class PagesService {
       collaborators: [userId]
     });
 
+    // 새 페이지 생성 시 빈 paragraph 블록 자동 생성 (각 페이지별 독립성 보장)
+    const paragraphBlock = db.createBlock({
+      pageId,
+      authorId: userId,
+      type: "paragraph",
+      props: { text: "", html: "" },
+      position: 0
+    });
+    page.blockIds.push(paragraphBlock.id);
+
     if (actualParentId) {
       const parent = db.pages.get(actualParentId);
       if (parent) {
         parent.childPageIds.push(pageId);
-        db.save();
       }
     }
 
+    db.save();
     return db.serializePageWithEntries(pageId);
   }
 

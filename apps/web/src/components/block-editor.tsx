@@ -36,6 +36,7 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
   const lastSavedContentRef = useRef<string>("");
   const userIsTypingRef = useRef(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const currentParagraphBlockIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -79,8 +80,16 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
       
       // 디바운싱: 800ms 후에 저장
       saveTimeoutRef.current = setTimeout(() => {
-        const firstBlock = blocks.find((b) => b.type === "paragraph");
-        if (firstBlock) {
+        // 현재 페이지의 paragraph 블록 찾기 (현재 페이지 ID와 일치하는 블록만)
+        const paragraphBlock = blocks.find((b) => 
+          b.type === "paragraph" && 
+          (currentParagraphBlockIdRef.current === null || b.id === currentParagraphBlockIdRef.current)
+        ) || blocks.find((b) => b.type === "paragraph");
+        
+        if (paragraphBlock) {
+          // 현재 페이지의 paragraph 블록 ID 저장
+          currentParagraphBlockIdRef.current = paragraphBlock.id;
+          
           const currentHtml = editor.getHTML();
           const currentText = editor.getText();
           
@@ -89,7 +98,7 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
             isUpdatingRef.current = true;
             lastSavedContentRef.current = currentHtml;
             
-            onBlockUpdate(firstBlock.id, { text: currentText, html: currentHtml });
+            onBlockUpdate(paragraphBlock.id, { text: currentText, html: currentHtml });
             
             // 저장 후 플래그 해제
             setTimeout(() => {
@@ -99,6 +108,12 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
           } else {
             userIsTypingRef.current = false;
           }
+        } else {
+          // paragraph 블록이 없으면 생성
+          if (onBlockCreate) {
+            onBlockCreate("paragraph", { text: "", html: "" });
+          }
+          userIsTypingRef.current = false;
         }
         saveTimeoutRef.current = null;
       }, 800);
@@ -125,17 +140,32 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
     // 페이지가 변경된 경우에만 내용 로드
     if (lastPageIdRef.current !== pageId) {
       lastPageIdRef.current = pageId;
-      const firstParagraphBlock = blocks.find((b) => b.type === "paragraph");
-      const content = firstParagraphBlock
-        ? `<p>${String(firstParagraphBlock.props.text ?? "").trim()}</p>`
-        : "<p></p>";
+      currentParagraphBlockIdRef.current = null; // 페이지 변경 시 블록 ID 초기화
       
-      isUpdatingRef.current = true;
-      lastSavedContentRef.current = content;
-      editor.commands.setContent(content);
-      setTimeout(() => {
-        isUpdatingRef.current = false;
-      }, 100);
+      // 현재 페이지의 paragraph 블록 찾기
+      const paragraphBlock = blocks.find((b) => b.type === "paragraph");
+      
+      if (paragraphBlock) {
+        currentParagraphBlockIdRef.current = paragraphBlock.id;
+        const savedHtml = String(paragraphBlock.props.html ?? "");
+        const savedText = String(paragraphBlock.props.text ?? "").trim();
+        const content = savedHtml || (savedText ? `<p>${savedText}</p>` : "<p></p>");
+        
+        isUpdatingRef.current = true;
+        lastSavedContentRef.current = content;
+        editor.commands.setContent(content);
+        setTimeout(() => {
+          isUpdatingRef.current = false;
+        }, 100);
+      } else {
+        // paragraph 블록이 없으면 빈 에디터 표시
+        isUpdatingRef.current = true;
+        lastSavedContentRef.current = "<p></p>";
+        editor.commands.setContent("<p></p>");
+        setTimeout(() => {
+          isUpdatingRef.current = false;
+        }, 100);
+      }
       return;
     }
 
@@ -145,11 +175,27 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
     }
 
     // 블록이 업데이트되었지만 사용자가 입력 중이 아닐 때만 동기화
-    const firstParagraphBlock = blocks.find((b) => b.type === "paragraph");
-    if (!firstParagraphBlock) return;
+    // 현재 페이지의 paragraph 블록만 사용 (페이지별 독립성 보장)
+    const paragraphBlock = blocks.find((b) => 
+      b.type === "paragraph" && 
+      (currentParagraphBlockIdRef.current === null || b.id === currentParagraphBlockIdRef.current)
+    ) || blocks.find((b) => b.type === "paragraph");
+    
+    if (!paragraphBlock) {
+      // paragraph 블록이 없으면 생성
+      if (onBlockCreate) {
+        onBlockCreate("paragraph", { text: "", html: "" });
+      }
+      return;
+    }
 
-    const savedText = String(firstParagraphBlock.props.text ?? "").trim();
-    const savedHtml = String(firstParagraphBlock.props.html ?? savedText);
+    // 현재 페이지의 paragraph 블록 ID 저장
+    if (currentParagraphBlockIdRef.current !== paragraphBlock.id) {
+      currentParagraphBlockIdRef.current = paragraphBlock.id;
+    }
+
+    const savedText = String(paragraphBlock.props.text ?? "").trim();
+    const savedHtml = String(paragraphBlock.props.html ?? savedText);
     const expectedContent = savedHtml || (savedText ? `<p>${savedText}</p>` : "<p></p>");
     const currentContent = editor.getHTML();
 
