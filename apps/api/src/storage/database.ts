@@ -97,7 +97,8 @@ export type PageTreeNode = {
   children: PageTreeNode[];
 };
 
-const DATA_DIR = join(process.cwd(), "data");
+// 환경 변수로 데이터 디렉토리 설정 가능 (Render Persistent Disk 사용 시)
+const DATA_DIR = process.env.DATA_DIR || join(process.cwd(), "data");
 const USERS_FILE = join(DATA_DIR, "users.json");
 const PAGES_FILE = join(DATA_DIR, "pages.json");
 const BLOCKS_FILE = join(DATA_DIR, "blocks.json");
@@ -106,7 +107,13 @@ const TEAMS_FILE = join(DATA_DIR, "teams.json");
 
 function ensureDataDir() {
   if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true });
+    try {
+      mkdirSync(DATA_DIR, { recursive: true });
+      console.log(`[Database] 데이터 디렉토리 생성: ${DATA_DIR}`);
+    } catch (error) {
+      console.error(`[Database] 데이터 디렉토리 생성 실패: ${DATA_DIR}`, error);
+      throw error;
+    }
   }
 }
 
@@ -125,9 +132,31 @@ function loadJson<T>(file: string, defaultValue: T): T {
 function saveJson<T>(file: string, data: T) {
   ensureDataDir();
   try {
-    writeFileSync(file, JSON.stringify(data, null, 2), "utf-8");
+    const jsonString = JSON.stringify(data, null, 2);
+    writeFileSync(file, jsonString, "utf-8");
+    console.log(`[Database] 저장 성공: ${file} (${jsonString.length} bytes)`);
   } catch (error) {
-    console.error(`Failed to save ${file}:`, error);
+    console.error(`[Database] 저장 실패: ${file}`, error);
+    // 저장 실패 시 재시도 (최대 3회)
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        ensureDataDir();
+        writeFileSync(file, JSON.stringify(data, null, 2), "utf-8");
+        console.log(`[Database] 재시도 후 저장 성공: ${file}`);
+        return;
+      } catch (retryError) {
+        retries--;
+        if (retries === 0) {
+          console.error(`[Database] 최종 저장 실패: ${file}`, retryError);
+          throw retryError;
+        }
+        console.warn(`[Database] 저장 재시도 중... (남은 시도: ${retries})`);
+        // 짧은 지연 후 재시도
+        const delay = (3 - retries) * 100;
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
   }
 }
 
@@ -143,6 +172,7 @@ class PersistentDatabase {
   }
 
   private load() {
+    console.log(`[Database] 데이터 로드 시작: ${DATA_DIR}`);
     const usersData = loadJson<Record<string, User>>(USERS_FILE, {});
     const pagesData = loadJson<Record<string, Page>>(PAGES_FILE, {});
     const blocksData = loadJson<Record<string, Block>>(BLOCKS_FILE, {});
@@ -154,14 +184,22 @@ class PersistentDatabase {
     this.blocks = new Map(Object.entries(blocksData));
     this.files = new Map(Object.entries(filesData));
     this.teams = new Map(Object.entries(teamsData));
+    
+    console.log(`[Database] 데이터 로드 완료: 사용자 ${this.users.size}명, 페이지 ${this.pages.size}개, 블록 ${this.blocks.size}개, 파일 ${this.files.size}개, 팀 ${this.teams.size}개`);
   }
 
   save() {
-    saveJson(USERS_FILE, Object.fromEntries(this.users));
-    saveJson(PAGES_FILE, Object.fromEntries(this.pages));
-    saveJson(BLOCKS_FILE, Object.fromEntries(this.blocks));
-    saveJson(FILES_FILE, Object.fromEntries(this.files));
-    saveJson(TEAMS_FILE, Object.fromEntries(this.teams));
+    try {
+      saveJson(USERS_FILE, Object.fromEntries(this.users));
+      saveJson(PAGES_FILE, Object.fromEntries(this.pages));
+      saveJson(BLOCKS_FILE, Object.fromEntries(this.blocks));
+      saveJson(FILES_FILE, Object.fromEntries(this.files));
+      saveJson(TEAMS_FILE, Object.fromEntries(this.teams));
+      console.log(`[Database] 모든 데이터 저장 완료`);
+    } catch (error) {
+      console.error(`[Database] 데이터 저장 중 오류 발생:`, error);
+      throw error;
+    }
   }
 
   findUserByEmail(email: string) {
