@@ -18,7 +18,7 @@ export class AuthController {
   }
 
   @Post("imweb")
-  async imwebLogin(@Body() payload: { token: string }) {
-    return this.authService.imwebLogin(payload.token);
+  async imwebLogin(@Body() payload: { email: string; name: string; imwebId?: string }) {
+    return this.authService.imwebLogin(payload);
   }
 }
