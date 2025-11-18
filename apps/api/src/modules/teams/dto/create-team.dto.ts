@@ -1,0 +1,12 @@
+import { IsString, IsOptional, MinLength } from "class-validator";
+
+export class CreateTeamDto {
+  @IsString()
+  @MinLength(1)
+  name: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+}
+

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Sidebar } from "../../components/sidebar";
 import { BlockEditor } from "../../components/block-editor";
 import { ShareModal } from "../../components/share-modal";
+import { TeamModal } from "../../components/team-modal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
@@ -27,6 +28,7 @@ export default function WorkspacePage() {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showTeamModal, setShowTeamModal] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState("");
   const [newPageParentId, setNewPageParentId] = useState<string | null>(null);
   const [sidebarRefresh, setSidebarRefresh] = useState(0);
@@ -501,6 +503,9 @@ export default function WorkspacePage() {
             <button className="button secondary" onClick={() => setShowShareModal(true)}>
               공유
             </button>
+            <button className="button secondary" onClick={() => setShowTeamModal(true)}>
+              팀 관리
+            </button>
           </div>
         </header>
         {status && (
@@ -551,6 +556,9 @@ export default function WorkspacePage() {
       )}
       {showShareModal && currentPage && (
         <ShareModal token={token} pageId={currentPage.id} onClose={() => setShowShareModal(false)} />
+      )}
+      {showTeamModal && (
+        <TeamModal token={token} onClose={() => setShowTeamModal(false)} />
       )}
     </div>
   );

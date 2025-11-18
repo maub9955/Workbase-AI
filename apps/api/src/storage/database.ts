@@ -73,6 +73,17 @@ export type User = {
   password: string;
   name: string;
   personalPageId: string;
+  teamIds?: string[];
+};
+
+export type Team = {
+  id: string;
+  name: string;
+  description?: string;
+  ownerId: string;
+  memberIds: string[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type PageSnapshot = Page & {
@@ -91,6 +102,7 @@ const USERS_FILE = join(DATA_DIR, "users.json");
 const PAGES_FILE = join(DATA_DIR, "pages.json");
 const BLOCKS_FILE = join(DATA_DIR, "blocks.json");
 const FILES_FILE = join(DATA_DIR, "files.json");
+const TEAMS_FILE = join(DATA_DIR, "teams.json");
 
 function ensureDataDir() {
   if (!existsSync(DATA_DIR)) {
@@ -124,6 +136,7 @@ class PersistentDatabase {
   pages = new Map<string, Page>();
   blocks = new Map<string, Block>();
   files = new Map<string, FileAsset>();
+  teams = new Map<string, Team>();
 
   constructor() {
     this.load();
@@ -134,11 +147,13 @@ class PersistentDatabase {
     const pagesData = loadJson<Record<string, Page>>(PAGES_FILE, {});
     const blocksData = loadJson<Record<string, Block>>(BLOCKS_FILE, {});
     const filesData = loadJson<Record<string, FileAsset>>(FILES_FILE, {});
+    const teamsData = loadJson<Record<string, Team>>(TEAMS_FILE, {});
 
     this.users = new Map(Object.entries(usersData));
     this.pages = new Map(Object.entries(pagesData));
     this.blocks = new Map(Object.entries(blocksData));
     this.files = new Map(Object.entries(filesData));
+    this.teams = new Map(Object.entries(teamsData));
   }
 
   save() {
@@ -146,6 +161,7 @@ class PersistentDatabase {
     saveJson(PAGES_FILE, Object.fromEntries(this.pages));
     saveJson(BLOCKS_FILE, Object.fromEntries(this.blocks));
     saveJson(FILES_FILE, Object.fromEntries(this.files));
+    saveJson(TEAMS_FILE, Object.fromEntries(this.teams));
   }
 
   findUserByEmail(email: string) {

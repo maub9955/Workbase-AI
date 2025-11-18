@@ -30,9 +30,12 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
   const [showSlashMenu, setShowSlashMenu] = useState(false);
   const [slashMenuPosition, setSlashMenuPosition] = useState({ top: 0, left: 0 });
   const [slashQuery, setSlashQuery] = useState("");
-  const lastPageIdRef = useRef<string>("");
+  const lastPageIdRef = useRef<string | null>(null);
   const isUpdatingRef = useRef(false);
   const slashMenuRef = useRef<HTMLDivElement>(null);
+  const lastSavedContentRef = useRef<string>("");
+  const userIsTypingRef = useRef(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -62,18 +65,43 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
     content: "",
     onUpdate: ({ editor }) => {
       if (!token || !onBlockUpdate || isUpdatingRef.current) return;
-      const text = editor.getText();
+      
       const html = editor.getHTML();
-      const firstBlock = blocks.find((b) => b.type === "paragraph");
-      if (firstBlock) {
-        // 업데이트 중 플래그를 설정하여 useEffect가 덮어쓰지 않도록 함
-        isUpdatingRef.current = true;
-        onBlockUpdate(firstBlock.id, { text, html });
-        // 짧은 딜레이 후 플래그 해제 (저장이 완료될 때까지)
-        setTimeout(() => {
-          isUpdatingRef.current = false;
-        }, 500);
+      const text = editor.getText();
+      
+      // 사용자가 입력 중임을 표시
+      userIsTypingRef.current = true;
+      
+      // 이전 타이머가 있으면 취소
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
+      
+      // 디바운싱: 800ms 후에 저장
+      saveTimeoutRef.current = setTimeout(() => {
+        const firstBlock = blocks.find((b) => b.type === "paragraph");
+        if (firstBlock) {
+          const currentHtml = editor.getHTML();
+          const currentText = editor.getText();
+          
+          // 마지막 저장된 내용과 다를 때만 저장
+          if (currentHtml !== lastSavedContentRef.current) {
+            isUpdatingRef.current = true;
+            lastSavedContentRef.current = currentHtml;
+            
+            onBlockUpdate(firstBlock.id, { text: currentText, html: currentHtml });
+            
+            // 저장 후 플래그 해제
+            setTimeout(() => {
+              userIsTypingRef.current = false;
+              isUpdatingRef.current = false;
+            }, 200);
+          } else {
+            userIsTypingRef.current = false;
+          }
+        }
+        saveTimeoutRef.current = null;
+      }, 800);
     },
     onSelectionUpdate: ({ editor }) => {
       const { from } = editor.state.selection;
@@ -94,44 +122,45 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
   useEffect(() => {
     if (!editor || !mounted) return;
 
+    // 페이지가 변경된 경우에만 내용 로드
     if (lastPageIdRef.current !== pageId) {
       lastPageIdRef.current = pageId;
-      // 첫 번째 paragraph 블록만 사용 (중복 방지)
       const firstParagraphBlock = blocks.find((b) => b.type === "paragraph");
       const content = firstParagraphBlock
         ? `<p>${String(firstParagraphBlock.props.text ?? "").trim()}</p>`
         : "<p></p>";
       
       isUpdatingRef.current = true;
+      lastSavedContentRef.current = content;
       editor.commands.setContent(content);
       setTimeout(() => {
         isUpdatingRef.current = false;
       }, 100);
-    } else {
-      // 첫 번째 paragraph 블록만 사용 (중복 방지)
-      const firstParagraphBlock = blocks.find((b) => b.type === "paragraph");
-      const expectedContent = firstParagraphBlock
-        ? `<p>${String(firstParagraphBlock.props.text ?? "").trim()}</p>`
-        : "<p></p>";
-      
-      const currentContent = editor.getHTML();
-      // 사용자가 입력 중일 때는 덮어쓰지 않도록 개선
-      // 에디터가 포커스를 가지고 있거나, 내용이 비어있지 않을 때는 덮어쓰지 않음
-      const isEditorFocused = editor.isFocused;
-      const hasUserContent = currentContent.trim() !== "" && currentContent.trim() !== "<p></p>";
-      
-      // 에디터가 포커스를 가지고 있고 사용자가 입력 중이면 덮어쓰지 않음
-      if (isEditorFocused && hasUserContent && !isUpdatingRef.current) {
-        return;
-      }
-      
-      if (currentContent !== expectedContent && !isUpdatingRef.current) {
-        isUpdatingRef.current = true;
-        editor.commands.setContent(expectedContent);
-        setTimeout(() => {
-          isUpdatingRef.current = false;
-        }, 100);
-      }
+      return;
+    }
+
+    // 같은 페이지인 경우: 사용자가 입력 중이거나 에디터가 포커스를 가지고 있으면 절대 덮어쓰지 않음
+    if (userIsTypingRef.current || editor.isFocused || isUpdatingRef.current) {
+      return;
+    }
+
+    // 블록이 업데이트되었지만 사용자가 입력 중이 아닐 때만 동기화
+    const firstParagraphBlock = blocks.find((b) => b.type === "paragraph");
+    if (!firstParagraphBlock) return;
+
+    const savedText = String(firstParagraphBlock.props.text ?? "").trim();
+    const savedHtml = String(firstParagraphBlock.props.html ?? savedText);
+    const expectedContent = savedHtml || (savedText ? `<p>${savedText}</p>` : "<p></p>");
+    const currentContent = editor.getHTML();
+
+    // 저장된 내용과 현재 내용이 다르고, 마지막 저장된 내용과도 다를 때만 동기화
+    if (currentContent !== expectedContent && expectedContent !== lastSavedContentRef.current) {
+      isUpdatingRef.current = true;
+      lastSavedContentRef.current = expectedContent;
+      editor.commands.setContent(expectedContent);
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 100);
     }
   }, [editor, blocks, pageId, mounted]);
 
