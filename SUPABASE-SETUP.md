@@ -2,12 +2,46 @@
 
 ## 1단계: Supabase 연결 정보 가져오기
 
+### 방법 1: Settings → Database (권장)
+
 1. Supabase Dashboard 접속: https://app.supabase.com
 2. 프로젝트 선택 (maub9955's Project)
 3. **Settings** (왼쪽 사이드바) → **Database** 클릭
-4. **Connection string** 섹션에서 **URI** 복사
-   - 예: `postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:5432/postgres`
-5. 또는 **Connection pooling** 섹션에서 **Session mode** URI 복사 (권장)
+4. **Connection string** 섹션이 보이지 않으면 아래 방법 2 사용
+
+### 방법 2: Settings → API (더 쉬운 방법)
+
+1. Supabase Dashboard 접속: https://app.supabase.com
+2. 프로젝트 선택 (maub9955's Project)
+3. **Settings** (왼쪽 사이드바) → **API** 클릭
+4. **Project API keys** 섹션에서:
+   - **Project URL** 확인 (예: `https://xxxxx.supabase.co`)
+   - **Database** 섹션으로 스크롤
+   - **Connection string** 또는 **Connection pooling** 섹션 확인
+
+### 방법 3: 직접 구성 (가장 확실한 방법)
+
+1. **Settings** → **Database** 클릭
+2. **Database password** 섹션에서:
+   - 비밀번호를 알고 있으면 사용
+   - 모르면 **Reset database password** 클릭하여 새 비밀번호 설정
+3. **Settings** → **API** 클릭
+4. **Project URL** 확인 (예: `https://xxxxx.supabase.co`)
+5. Connection string을 다음 형식으로 직접 구성:
+   ```
+   postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:5432/postgres
+   ```
+   - `[YOUR-PASSWORD]`: 위에서 확인한 데이터베이스 비밀번호
+   - `xxxxx`: Project URL에서 추출 (예: `https://abcdefghijklmnop.supabase.co` → `abcdefghijklmnop`)
+
+### 방법 4: Connection Pooling 사용 (권장)
+
+1. **Settings** → **Database** 클릭
+2. **Connection pooling configuration** 섹션 확인
+3. **Connection string** 섹션이 있으면 **Session mode** URI 사용
+4. 없으면 위 방법 3으로 직접 구성
+
+**참고**: Supabase 무료 플랜에서도 Connection string 사용이 가능합니다. 결제가 필요하지 않습니다.
 
 ## 2단계: 데이터베이스 스키마 생성
 
