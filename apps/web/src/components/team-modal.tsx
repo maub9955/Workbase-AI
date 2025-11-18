@@ -70,6 +70,7 @@ export function TeamModal({ token, onClose }: TeamModalProps) {
       });
 
       if (res.ok) {
+        const data = await res.json();
         setStatus("팀이 생성되었습니다!");
         setTeamName("");
         setTeamDescription("");
@@ -77,11 +78,20 @@ export function TeamModal({ token, onClose }: TeamModalProps) {
         loadTeams();
         setTimeout(() => setStatus(null), 2000);
       } else {
-        const error = await res.json().catch(() => ({ message: "팀 생성에 실패했습니다." }));
-        setStatus(error.message ?? "팀 생성에 실패했습니다.");
+        const errorText = await res.text().catch(() => "팀 생성에 실패했습니다.");
+        let errorMessage = "팀 생성에 실패했습니다.";
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        setStatus(`오류: ${errorMessage} (상태 코드: ${res.status})`);
+        console.error("팀 생성 실패:", res.status, errorText);
       }
     } catch (error) {
-      setStatus("에러가 발생했습니다.");
+      console.error("팀 생성 에러:", error);
+      setStatus(`에러가 발생했습니다: ${error instanceof Error ? error.message : "알 수 없는 오류"}`);
     }
   };
 

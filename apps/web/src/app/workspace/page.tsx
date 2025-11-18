@@ -100,6 +100,9 @@ export default function WorkspacePage() {
     const tokenToUse = tokenValue || token;
     if (!tokenToUse) return;
     try {
+      // 페이지 변경 시 이전 블록 먼저 초기화 (텍스트가 남아있는 문제 방지)
+      setBlocks([]);
+      
       const res = await fetch(`${API_URL}/pages/${pageId}`, {
         headers: { "x-user-token": tokenToUse }
       });
