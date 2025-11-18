@@ -10,6 +10,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    // favicon.ico 요청은 조용히 처리 (브라우저가 자동으로 요청)
+    if (request.url === "/favicon.ico" || request.url === "/api/favicon.ico") {
+      return response.status(HttpStatus.NO_CONTENT).send();
+    }
+
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = "Internal server error";
 
