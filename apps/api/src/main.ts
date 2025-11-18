@@ -3,8 +3,12 @@ import { NestFactory } from "@nestjs/core";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./modules/app.module.js";
 import { AllExceptionsFilter } from "./common/filters/http-exception.filter.js";
+import { initializeDatabase } from "./storage/database.js";
 
 async function bootstrap() {
+  // 데이터베이스 초기화 (PostgreSQL이 설정되어 있으면 사용)
+  await initializeDatabase();
+  
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true
   });
