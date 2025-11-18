@@ -12,7 +12,7 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     if (token) {
-      // Imweb 토큰을 API로 전달하여 검증
+      // Workbase-AI 토큰을 API로 전달하여 검증
       fetch(`${API_URL}/auth/imweb`, {
         method: 'POST',
         headers: {
