@@ -1,7 +1,6 @@
 import { Controller, Get, Headers, HttpException, HttpStatus, Inject, Param, Post, Query, Req, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import type { Request, Response } from "express";
-import type { Multer } from "multer";
 import { FilesService } from "./files.service.js";
 import { AuthService } from "../auth/auth.service.js";
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from "node:fs";
@@ -28,7 +27,7 @@ export class FilesController {
   @UseInterceptors(FileInterceptor("file"))
   uploadFile(
     @Headers("x-user-token") token: string | undefined,
-    @UploadedFile() file: Multer.File | undefined,
+    @UploadedFile() file: Express.Multer.File | undefined,
     @Req() req: Request
   ) {
     try {
