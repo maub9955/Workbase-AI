@@ -244,7 +244,26 @@ class PersistentDatabase {
     });
     page.blockIds.push(welcomeBlock.id);
 
-    this.save();
+    // 사용자 생성 시 즉시 저장 (데이터 손실 방지)
+    try {
+      this.save();
+      console.log(`[Database] 사용자 생성 및 저장 완료: ${email} (${id})`);
+      
+      // 저장 확인: 파일이 실제로 저장되었는지 확인
+      if (existsSync(USERS_FILE)) {
+        const savedData = loadJson<Record<string, User>>(USERS_FILE, {});
+        if (savedData[id]) {
+          console.log(`[Database] 사용자 저장 확인 완료: ${email}`);
+        } else {
+          console.error(`[Database] 경고: 사용자가 파일에 저장되지 않았습니다: ${email}`);
+        }
+      }
+    } catch (error) {
+      console.error(`[Database] 사용자 생성 후 저장 실패: ${email}`, error);
+      // 저장 실패해도 사용자는 생성되었으므로 에러를 던지지 않음
+      // 다음 save() 호출 시 저장될 것
+    }
+    
     return { user, page: this.serializePageWithEntries(personalPageId) };
   }
 
