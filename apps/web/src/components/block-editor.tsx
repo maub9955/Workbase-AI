@@ -89,9 +89,10 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
 
     if (lastPageIdRef.current !== pageId) {
       lastPageIdRef.current = pageId;
-      const paragraphBlocks = blocks.filter((b) => b.type === "paragraph");
-      const content = paragraphBlocks.length > 0
-        ? paragraphBlocks.map((b) => `<p>${String(b.props.text ?? "").trim()}</p>`).join("")
+      // 첫 번째 paragraph 블록만 사용 (중복 방지)
+      const firstParagraphBlock = blocks.find((b) => b.type === "paragraph");
+      const content = firstParagraphBlock
+        ? `<p>${String(firstParagraphBlock.props.text ?? "").trim()}</p>`
         : "<p></p>";
       
       isUpdatingRef.current = true;
@@ -100,9 +101,10 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
         isUpdatingRef.current = false;
       }, 100);
     } else {
-      const paragraphBlocks = blocks.filter((b) => b.type === "paragraph");
-      const expectedContent = paragraphBlocks.length > 0
-        ? paragraphBlocks.map((b) => `<p>${String(b.props.text ?? "").trim()}</p>`).join("")
+      // 첫 번째 paragraph 블록만 사용 (중복 방지)
+      const firstParagraphBlock = blocks.find((b) => b.type === "paragraph");
+      const expectedContent = firstParagraphBlock
+        ? `<p>${String(firstParagraphBlock.props.text ?? "").trim()}</p>`
         : "<p></p>";
       
       const currentContent = editor.getHTML();
