@@ -63,9 +63,16 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
     onUpdate: ({ editor }) => {
       if (!token || !onBlockUpdate || isUpdatingRef.current) return;
       const text = editor.getText();
+      const html = editor.getHTML();
       const firstBlock = blocks.find((b) => b.type === "paragraph");
       if (firstBlock) {
-        onBlockUpdate(firstBlock.id, { text });
+        // 업데이트 중 플래그를 설정하여 useEffect가 덮어쓰지 않도록 함
+        isUpdatingRef.current = true;
+        onBlockUpdate(firstBlock.id, { text, html });
+        // 짧은 딜레이 후 플래그 해제 (저장이 완료될 때까지)
+        setTimeout(() => {
+          isUpdatingRef.current = false;
+        }, 500);
       }
     },
     onSelectionUpdate: ({ editor }) => {
@@ -108,6 +115,16 @@ export function BlockEditor({ token, pageId, blocks, onBlockUpdate, onBlockCreat
         : "<p></p>";
       
       const currentContent = editor.getHTML();
+      // 사용자가 입력 중일 때는 덮어쓰지 않도록 개선
+      // 에디터가 포커스를 가지고 있거나, 내용이 비어있지 않을 때는 덮어쓰지 않음
+      const isEditorFocused = editor.isFocused;
+      const hasUserContent = currentContent.trim() !== "" && currentContent.trim() !== "<p></p>";
+      
+      // 에디터가 포커스를 가지고 있고 사용자가 입력 중이면 덮어쓰지 않음
+      if (isEditorFocused && hasUserContent && !isUpdatingRef.current) {
+        return;
+      }
+      
       if (currentContent !== expectedContent && !isUpdatingRef.current) {
         isUpdatingRef.current = true;
         editor.commands.setContent(expectedContent);

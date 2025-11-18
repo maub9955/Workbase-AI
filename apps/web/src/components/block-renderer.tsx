@@ -294,28 +294,6 @@ export function BlockRenderer({ block, token, onUpdate, onDelete }: BlockRendere
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
           <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: "600", color: "#333" }}>📊 표</h3>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            {onDelete && (
-              <button
-                onClick={() => onDelete(block.id)}
-                style={{
-                  background: "#ff4444",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "0.5rem 1rem",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  fontWeight: "600",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                  transition: "all 0.2s"
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "#cc3333"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "#ff4444"}
-                title="블록 삭제"
-              >
-                삭제
-              </button>
-            )}
             <button 
               onClick={addColumn} 
               style={{ 
@@ -350,6 +328,28 @@ export function BlockRenderer({ block, token, onUpdate, onDelete }: BlockRendere
             >
               + 행 추가
             </button>
+            {onDelete && (
+              <button
+                onClick={() => onDelete(block.id)}
+                style={{
+                  background: "#ff4444",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "0.5rem 1rem",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  fontWeight: "600",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#cc3333"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#ff4444"}
+                title="블록 삭제"
+              >
+                삭제
+              </button>
+            )}
           </div>
         </div>
         <div style={{ overflowX: "auto" }}>
@@ -536,6 +536,23 @@ export function BlockRenderer({ block, token, onUpdate, onDelete }: BlockRendere
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
           <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: "600", color: "#333" }}>📝 리스트</h3>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            <button 
+              onClick={addItem} 
+              style={{ 
+                padding: "0.5rem 1rem", 
+                fontSize: "0.875rem", 
+                cursor: "pointer",
+                background: "#f5f5f5",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                color: "#333",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "#e8e8e8"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "#f5f5f5"}
+            >
+              + 항목 추가
+            </button>
             {onDelete && (
               <button
                 onClick={() => onDelete(block.id)}
@@ -558,23 +575,6 @@ export function BlockRenderer({ block, token, onUpdate, onDelete }: BlockRendere
                 삭제
               </button>
             )}
-            <button 
-              onClick={addItem} 
-              style={{ 
-                padding: "0.5rem 1rem", 
-                fontSize: "0.875rem", 
-                cursor: "pointer",
-                background: "#f5f5f5",
-                border: "1px solid #ddd",
-                borderRadius: "6px",
-                color: "#333",
-                transition: "all 0.2s"
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "#e8e8e8"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "#f5f5f5"}
-            >
-              + 항목 추가
-            </button>
           </div>
         </div>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
@@ -649,6 +649,23 @@ export function BlockRenderer({ block, token, onUpdate, onDelete }: BlockRendere
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: "600", color: "#333" }}>⏱️ 타임라인</h3>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            <button 
+              onClick={addEvent} 
+              style={{ 
+                padding: "0.5rem 1rem", 
+                fontSize: "0.875rem", 
+                cursor: "pointer",
+                background: "#f5f5f5",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                color: "#333",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "#e8e8e8"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "#f5f5f5"}
+            >
+              + 이벤트 추가
+            </button>
             {onDelete && (
               <button
                 onClick={() => onDelete(block.id)}
@@ -671,23 +688,6 @@ export function BlockRenderer({ block, token, onUpdate, onDelete }: BlockRendere
                 삭제
               </button>
             )}
-            <button 
-              onClick={addEvent} 
-              style={{ 
-                padding: "0.5rem 1rem", 
-                fontSize: "0.875rem", 
-                cursor: "pointer",
-                background: "#f5f5f5",
-                border: "1px solid #ddd",
-                borderRadius: "6px",
-                color: "#333",
-                transition: "all 0.2s"
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "#e8e8e8"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "#f5f5f5"}
-            >
-              + 이벤트 추가
-            </button>
           </div>
         </div>
         <div style={{ position: "relative", paddingLeft: "2.5rem" }}>
@@ -839,28 +839,6 @@ export function BlockRenderer({ block, token, onUpdate, onDelete }: BlockRendere
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", position: "relative" }}>
           <h3 style={{ margin: 0, fontSize: "1.5rem", fontWeight: "600", color: "#333" }}>📅 캘린더 - {currentYear}년 {monthNames[currentMonth]}</h3>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            {onDelete && (
-              <button
-                onClick={() => onDelete(block.id)}
-                style={{
-                  background: "#ff4444",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "0.5rem 1rem",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  fontWeight: "600",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                  transition: "all 0.2s"
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "#cc3333"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "#ff4444"}
-                title="블록 삭제"
-              >
-                삭제
-              </button>
-            )}
             <button
               onClick={() => {
                 if (currentMonth === 0) {
@@ -907,6 +885,28 @@ export function BlockRenderer({ block, token, onUpdate, onDelete }: BlockRendere
             >
               →
             </button>
+            {onDelete && (
+              <button
+                onClick={() => onDelete(block.id)}
+                style={{
+                  background: "#ff4444",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "0.5rem 1rem",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  fontWeight: "600",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#cc3333"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#ff4444"}
+                title="블록 삭제"
+              >
+                삭제
+              </button>
+            )}
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.75rem" }}>

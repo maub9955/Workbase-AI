@@ -32,7 +32,8 @@ export function ShareModal({ token, pageId, onClose }: ShareModalProps) {
       });
 
       if (res.ok) {
-        setStatus(`${email} 님을 초대했습니다. 초대된 사용자는 회원가입 후 이 페이지에 접근할 수 있습니다.\n\n참고: 실제 이메일 전송 기능은 아직 구현되지 않았습니다. 서버 콘솔에 이메일 내용이 출력됩니다.`);
+        const data = await res.json().catch(() => ({}));
+        setStatus(`${email} 님을 초대했습니다!\n\n초대 이메일이 전송되었습니다. (SMTP 설정이 되어 있는 경우)\n초대된 사용자는 회원가입 후 이 페이지에 접근할 수 있습니다.`);
         setEmail("");
       } else {
         const error = await res.json().catch(() => ({ message: "초대에 실패했습니다." }));
@@ -84,7 +85,7 @@ export function ShareModal({ token, pageId, onClose }: ShareModalProps) {
         {activeTab === "invite" && (
           <div>
             <p style={{ marginBottom: "1rem", color: "#666", fontSize: "0.9rem" }}>
-              회원가입된 사용자의 이메일을 입력하세요. 해당 사용자가 이 페이지에 접근할 수 있습니다.
+              회원가입된 사용자의 이메일을 입력하세요. 초대 이메일이 전송되고, 해당 사용자가 이 페이지에 접근할 수 있습니다.
             </p>
             <form onSubmit={handleInvite}>
               <input

@@ -257,10 +257,16 @@ export default function WorkspacePage() {
         body: JSON.stringify(props)
       });
       if (res.ok) {
-        // 블록 업데이트 후 블록 목록 다시 로드
-        if (currentPage) {
-          loadBlocks(currentPage.id, token);
-        }
+        // 블록 업데이트 후 로컬 상태만 업데이트 (전체 리로드 방지)
+        setBlocks(prevBlocks => 
+          prevBlocks.map(block => 
+            block.id === blockId 
+              ? { ...block, props: { ...block.props, ...props } }
+              : block
+          )
+        );
+        // 전체 리로드는 하지 않음 (에디터 내용이 사라지는 것을 방지)
+        // 필요시에만 특정 블록만 업데이트
       } else {
         console.error("Failed to update block", await res.text());
       }
