@@ -442,24 +442,35 @@ class PersistentDatabase {
 
 // DATABASE_URL이 있으면 PostgreSQL 사용, 없으면 파일 기반 사용
 let dbInstance: PersistentDatabase | import("./postgres-database.js").PostgresDatabase | null = null;
+let dbInitialized = false;
 
 async function initializeDatabase() {
-  if (dbInstance) return dbInstance;
+  if (dbInitialized && dbInstance) return dbInstance;
   
   if (process.env.DATABASE_URL) {
     // PostgreSQL 데이터베이스 사용
-    const { PostgresDatabase } = await import("./postgres-database.js");
-    const pgDb = new PostgresDatabase();
-    await pgDb.initialize();
-    dbInstance = pgDb;
-    console.log("[Database] PostgreSQL 데이터베이스 사용");
+    try {
+      const { PostgresDatabase } = await import("./postgres-database.js");
+      const pgDb = new PostgresDatabase();
+      await pgDb.initialize();
+      dbInstance = pgDb;
+      dbInitialized = true;
+      console.log("[Database] PostgreSQL 데이터베이스 사용");
+      return dbInstance;
+    } catch (error) {
+      console.error("[Database] PostgreSQL 초기화 실패, 파일 기반으로 폴백:", error);
+      // PostgreSQL 실패 시 파일 기반으로 폴백
+      dbInstance = new PersistentDatabase();
+      dbInitialized = true;
+      return dbInstance;
+    }
   } else {
     // 파일 기반 데이터베이스 사용
     dbInstance = new PersistentDatabase();
+    dbInitialized = true;
     console.log("[Database] 파일 기반 데이터베이스 사용");
+    return dbInstance;
   }
-  
-  return dbInstance;
 }
 
 // 기본적으로 파일 기반 사용 (호환성)
@@ -467,11 +478,13 @@ async function initializeDatabase() {
 const fileDb = new PersistentDatabase();
 
 // db getter: dbInstance가 있으면 사용, 없으면 fileDb 사용
+// 동기적으로 접근 가능하도록 Proxy 사용
 export const db = new Proxy(fileDb, {
   get(target, prop) {
-    if (dbInstance) {
+    if (dbInstance && dbInitialized) {
       return (dbInstance as any)[prop];
     }
+    // 아직 초기화되지 않았으면 파일 기반 사용
     return (target as any)[prop];
   }
 }) as PersistentDatabase;

@@ -7,7 +7,13 @@ import { initializeDatabase } from "./storage/database.js";
 
 async function bootstrap() {
   // 데이터베이스 초기화 (PostgreSQL이 설정되어 있으면 사용)
-  await initializeDatabase();
+  try {
+    await initializeDatabase();
+    console.log("[Bootstrap] 데이터베이스 초기화 완료");
+  } catch (error) {
+    console.error("[Bootstrap] 데이터베이스 초기화 실패:", error);
+    // 데이터베이스 초기화 실패해도 서버는 시작 (파일 기반으로 폴백)
+  }
   
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true
