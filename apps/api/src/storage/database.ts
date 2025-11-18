@@ -152,9 +152,12 @@ function saveJson<T>(file: string, data: T) {
           throw retryError;
         }
         console.warn(`[Database] 저장 재시도 중... (남은 시도: ${retries})`);
-        // 짧은 지연 후 재시도
+        // 짧은 지연 후 재시도 (동기적으로 처리)
         const delay = (3 - retries) * 100;
-        await new Promise(resolve => setTimeout(resolve, delay));
+        const start = Date.now();
+        while (Date.now() - start < delay) {
+          // busy wait
+        }
       }
     }
   }
